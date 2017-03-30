@@ -4,7 +4,7 @@ import JSON
 import CCurl
 import JSON
 import Jay
-import VaporJWT
+import JWT
 import Console
 
 open class VaporAPNS {
@@ -77,7 +77,7 @@ open class VaporAPNS {
                                payload: Node([IssuerClaim(options.teamId!),
                                          IssuedAtClaim()]),
                                encoding: Base64URLEncoding(),
-                               signer: ES256(encodedKey: privateKey))
+                               signer: ES256(key: try privateKey.makeBytes()))
 
             let tokenString = try! jwt.createToken()
 
@@ -85,8 +85,10 @@ open class VaporAPNS {
             
             do {
                 let jwt2 = try JWT(token: tokenString, encoding: Base64URLEncoding())
-                let verified = try jwt2.verifySignatureWith(ES256(encodedKey: publicKey))
-                if !verified {
+                do {
+                    let _ = try jwt2.verifySignature(using: ES256(key: try publicKey.makeBytes()))
+                }
+                catch {
                     return Result.error(apnsId: message.messageId, deviceToken: deviceToken, error: .invalidSignature)
                 }
             } catch {
