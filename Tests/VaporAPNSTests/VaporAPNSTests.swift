@@ -8,7 +8,7 @@
 
 import XCTest
 @testable import VaporAPNS
-import VaporJWT
+import JWT
 import JSON
 
 import Foundation
@@ -51,14 +51,20 @@ class VaporAPNSTests: XCTestCase { // TODO: Set this up so others can test this 
         let jwt = try! JWT(
             additionalHeaders: [KeyID("E811E6AE22")],
             payload: Node([IssuerClaim("D86BEC0E8B"), IssuedAtClaim()]),
-            signer: ES256(encodedKey: "ALEILVyGWnbBaSaIFDsh0yoZaK+Ej0po/55jG2FR6u6C"))
+            signer: ES256(key: try "ALEILVyGWnbBaSaIFDsh0yoZaK+Ej0po/55jG2FR6u6C".makeBytes()))
 
         let tokenString = try! jwt.createToken()
 
         do {
             let jwt2 = try JWT(token: tokenString)
-            let verified = try jwt2.verifySignatureWith(ES256(encodedKey: "BKqKwB6hpXp9SzWGt3YxnHgCEkcbS+JSrhoqkeqru/Nf62MeE958RIiKYsLFA/czdE7ThCt46azneU0IBnMCuQU="))
-            XCTAssertTrue(verified)
+            do {
+            let _ = try jwt2.verifySignature(using: ES256(key: try "BKqKwB6hpXp9SzWGt3YxnHgCEkcbS+JSrhoqkeqru/Nf62MeE958RIiKYsLFA/czdE7ThCt46azneU0IBnMCuQU=".makeBytes()))
+                XCTAssertTrue(true)
+            }
+            catch {
+                XCTAssertTrue(false)
+            }
+            
         } catch {
             print(error)
             XCTFail("Couldn't verify token")
