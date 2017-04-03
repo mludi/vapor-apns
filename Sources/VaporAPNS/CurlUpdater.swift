@@ -365,10 +365,10 @@ internal class CurlUpdater {
 //            args = ["bash", "-c", "\"cd \(workPath) && \(args.joined(separator: " "))\""]
 //        }
 //        print (args.joined(separator: " "))
-        #if os(macOS)
-            let task = Process()
-        #elseif os(Linux)
+        #if os(Linux) && !swift(>=3.1)
             let task = Task()
+        #else
+            let task = Process()
         #endif
         task.launchPath = "/usr/bin/env"
         task.arguments = args
